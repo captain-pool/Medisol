@@ -1,0 +1,7 @@
+# Directories
+__pycache__/
+env/
+
+# Vim Temporary Files
+.*.swp
+.*.swo
