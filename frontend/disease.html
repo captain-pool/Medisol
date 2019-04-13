@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Health Check up</title>
+
+	<script src="https://ajax.aspnetcdn.com/ajax/jQuery/jquery-3.3.1.min.js"></script>
+	<script>
+		var map = null;
+		var markerArray = [];
+		function submit(){
+						clear();
+		var val = $("#id_one").val();
+		var xhr = new XMLHttpRequest();
+		xhr.open('POST', "http://172.16.6.245:8000", true);
+		var data = new FormData();
+		data.append("type", val);
+		if(val != "cancer")
+			{console.log("Here");
+		data.append("img", $("#file_").prop('files')[0]);}
+		xhr.onreadystatechange = function(){
+
+			var obj = JSON.parse(this.responseText)[0];
+			if(!obj["empty"])
+			{
+				$("prediction-id").html(obj["prediction"]);
+				if(parseInt(obj["pred_val"]) != 0){
+					plotMap(obj["places"]);
+					addPlaces(obj["places"]);
+				}
+				$("#status").html("<b>"+obj["prediction"]+"</b>")
+			}
+		};
+		xhr.send(data);
+	}
+	function addPlaces(obj){	
+		$.each(obj, function(index, obj_){
+			console.log(obj_);
+			$("#hospital").append("<div><b>"+obj_["name"]+"</b><br>"+obj_["address"]+"</div><br><br><br>");
+		});
+	}
+	function initMap(){
+      var  kolkata= {lat: 22.567627, lng: 88.347444};
+  // The map, centered at Uluru
+  	map = new google.maps.Map(
+      document.getElementById('map'), {zoom: 10, center: kolkata});
+	}
+	function clear()
+	{
+		for(var i=markerArray.length-1; i>=0; i--){
+			markerArray[i].setMap(null);
+			markerArray.pop();
+		}
+		$("#hospital").html("");
+	}
+	function plotMap(places){
+		
+		$.each(places, function(index,obj){
+			if(map != null){
+				markerArray.push(new google.maps.Marker({"position": obj["location"], map: map}));
+			}
+		});
+	}
+	</script>
+	<script>
+function show_hide_cancer(){
+  if($("#id_one").val() == "cancer")
+    {$("#myDIV").show();
+    $("#file_").hide();}
+    else{
+    	$("#myDIV").hide();
+    $("#file_").show();
+    }
+}
+</script>
+</head>
+<style type="text/css">
+	/*#myDIV {
+  width: 100%;
+  padding: 50px 0;
+  text-align: center;
+  background-color: lightblue;
+  margin-top: 20px;
+}*/
+ /*.mystyle{
+ 	display: none;
+ }
+ */
+ body{
+ 	background-color: white;
+ 	/*background-image: url("1.jpg");
+ 	background-repeat: no-repeat;
+ 	background-size: 100%;
+ 	height: 100%;
+ 	margin-top: 15px;*/
+ }
+.mystyle {
+  width: 100%;
+  padding: 25px;
+  background-color: coral;
+  color: white;
+  font-size: 25px;
+  box-sizing: border-box;
+  display: inline-block;
+}
+#myDIV{
+	display: none;
+}
+
+
+.map{
+	border: 2px solid red;
+	height: 25em;
+	width: 78%;
+	margin: 10px 5px 5px 5px;
+	float: right;
+	display: auto;
+}
+.hospital{
+	margin-top: 10px;
+	border: 2px solid red;
+	height: 25em;
+	width: 20%;
+	margin: 10px 5px 5px 5px;
+	display: block;
+	position: absolute;
+}
+
+</style>
+<body>
+<h1 align="center">Choose your Disease</h1>
+<center>
+<select id="id_one" onchange="show_hide_cancer()">
+  <option value="mal">Malaria</option>
+  <option value="pnm">Chest Pnemonia</option>
+  <option value="cancer">Cancer</option>
+  <option value="None">None</option>
+</select>
+<br>
+<br>
+<br>
+  <input id="file_" type="file" name="pic" accept="image/*">
+  <br>
+  <br>
+<div id="myDIV">
+        <label>Texture Mean: </label>
+        <input type="text" name="texture_mean"  placeholder="#" required="required">
+        <br>
+        <label>Perimeter Mean: </label>
+        <input type="text" name="perimeter_mean"  placeholder="#" required="required">
+        <br>
+        <label>Smoothness Mean: </label>
+        <input type="text" name="smoothness_mean"  placeholder="#" required="required">
+        <br>
+        <label>Compactness Mean: </label>
+        <input type="text" name="compactness_mean"  placeholder="#" required="required">
+        <br>
+        <label>Symmetry Mean: </label>
+        <input type="text" name="symmetry_mean"  placeholder="#" required="required">
+    </div>
+<button onclick="submit()"> Analyse</button>
+<div id="status"> </div>
+</center>
+
+<br>
+<div class="hospital" id="hospital"></div>
+<div class="map" id="map"></div>
+
+	<script async defer
+    src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap">
+    </script>
+</body>
+</html>
